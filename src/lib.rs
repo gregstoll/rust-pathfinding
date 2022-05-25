@@ -61,19 +61,22 @@ impl Board {
         return successors;
     }
 
-    pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<Vec<Pos>>) {
-        let mut image = RgbImage::new(self.width as u32 * 50, self.height as u32 * 50);
+    pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<&Vec<Pos>>) {
+        const CELL_WIDTH: u32 = 50;
+        const CELL_HEIGHT: u32 = 50;
+        let mut image = RgbImage::new(self.width as u32 * CELL_WIDTH, self.height as u32 * CELL_HEIGHT);
         image.fill(255u8);
         const BLACK: Rgb<u8> = Rgb([0u8, 0u8, 0u8]);
         const BLUE: Rgb<u8> = Rgb([0u8, 0u8, 255u8]);
         const RED: Rgb<u8> = Rgb([255u8, 0u8, 0u8]);
+        const LIGHT_GRAY: Rgb<u8> = Rgb([150u8, 150u8, 150u8]);
 
         // draw inner border lines
         for i in 1u8..self.width {
-            draw_line_segment_mut(&mut image, (i as f32 * 50.0, 0.0), (i as f32 * 50.0, self.height as f32 * 50.0), BLACK);
+            draw_line_segment_mut(&mut image, (i as f32 * CELL_WIDTH as f32, 0.0), (i as f32 * CELL_WIDTH as f32, self.height as f32 * CELL_HEIGHT as f32), BLACK);
         }
         for i in 1u8..self.height {
-            draw_line_segment_mut(&mut image, (0.0, i as f32 * 50.0), (self.width as f32 * 50.0, i as f32 * 50.0), BLACK);
+            draw_line_segment_mut(&mut image, (0.0, i as f32 * CELL_HEIGHT as f32), (self.width as f32 * CELL_WIDTH as f32, i as f32 * CELL_HEIGHT as f32), BLACK);
         }
         
         let font = Vec::from(include_bytes!("DejaVuSans.ttf") as &[u8]);
@@ -83,14 +86,16 @@ impl Board {
             x: height * 2.0,
             y: height,
         };
-        let start_pos = pos_path.as_ref().map(|v| v.first()).flatten();
-        let end_pos = pos_path.as_ref().map(|v| v.last()).flatten();
+        let start_pos = pos_path.map(|v| v.first()).flatten();
+        let end_pos = pos_path.map(|v| v.last()).flatten();
+        // draw the numbers/walls (with start and end positions)
         for y in 0..self.height {
             for x in 0..self.width {
                 let board_value = self.data[y as usize][x as usize];
                 let cur_pos = Pos(x as i16, y as i16);
                 let mut cur_color: &Rgb<u8> = &BLACK;
-                // This would be a nice place to use is_some_and(), but it's still unstalbe
+                // This would be a nice place to use is_some_and(), but it's still unstable
+                // https://github.com/rust-lang/rust/issues/93050
                 if let Some(start_pos_real) = start_pos {
                     if start_pos_real == &cur_pos {
                         cur_color = &BLUE;
@@ -105,18 +110,42 @@ impl Board {
                     Some(board_value) => {
                         draw_text_mut(&mut image, 
                             *cur_color, 
-                            x as i32 * 50 + 10,
-                            y as i32 * 50 + 10, 
+                            x as i32 * CELL_WIDTH as i32 + 13,
+                            y as i32 * CELL_HEIGHT as i32 + 13, 
                             scale,
                             &font,
                             &format!("{}", board_value));
                     }
                     None => {
-                        draw_filled_rect_mut(&mut image, Rect::at(x as i32 * 50, y as i32 * 50).of_size(50, 50), *cur_color);
+                        draw_filled_rect_mut(&mut image, Rect::at(x as i32 * CELL_WIDTH as i32, y as i32 * CELL_HEIGHT as i32).of_size(CELL_WIDTH, CELL_HEIGHT), *cur_color);
                     }
                 }
             }
         }
+
+        fn get_line_endpoint(start: &Pos, end: &Pos) -> (f32, f32) {
+            let x_delta = 10.0 * match end.0.cmp(&start.0) {
+                std::cmp::Ordering::Equal => 0,
+                std::cmp::Ordering::Less => -1,
+                std::cmp::Ordering::Greater => 1
+            } as f32;
+            let y_delta = 10.0 * match end.1.cmp(&start.1) {
+                std::cmp::Ordering::Equal => 0,
+                std::cmp::Ordering::Less => -1,
+                std::cmp::Ordering::Greater => 1
+            } as f32;
+
+            ((start.0 as f32 + 0.5) * CELL_WIDTH as f32 + x_delta, (start.1 as f32 + 0.5) * CELL_HEIGHT as f32 + y_delta)
+        }
+        // Draw the path
+        if let Some(pos_path) = pos_path {
+            pos_path.windows(2).for_each(|pair| {
+                let start_pos = &pair[0];
+                let end_pos = &pair[1];
+                draw_line_segment_mut(&mut image, get_line_endpoint(start_pos, end_pos), get_line_endpoint(end_pos, start_pos), LIGHT_GRAY);
+            });
+        }
+
         image.save(file_path).unwrap();
     }
 }
