@@ -5,7 +5,7 @@ use imageproc::point::Point;
 use imageproc::rect::Rect;
 use rusttype::{Font, Scale};
 
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Pos(pub i16, pub i16);
 
 pub struct Board {
@@ -195,10 +195,10 @@ impl Board {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd)]
 pub struct Successor {
-    pos: Pos,
-    cost: u8,
+    pub pos: Pos,
+    pub cost: u8,
 }
 // Used to make writing tests easier
 impl PartialEq<(Pos, u8)> for Successor {
