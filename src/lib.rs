@@ -142,7 +142,9 @@ impl Board {
             pos_path.windows(2).for_each(|pair| {
                 let start_pos = &pair[0];
                 let end_pos = &pair[1];
+                // TODO - use draw_rect_mut to make the line thicker
                 draw_line_segment_mut(&mut image, get_line_endpoint(start_pos, end_pos), get_line_endpoint(end_pos, start_pos), LIGHT_GRAY);
+                // TODO - use draw_polygon_mut to draw an arrowhead
             });
         }
 
