@@ -32,8 +32,14 @@ struct Successor {
     pos: Pos,
     cost: u8,
 }
+// Used to make writing tests easier
+impl PartialEq<(Pos, u8)> for Successor {
+    fn eq(&self, other: &(Pos, u8)) -> bool {
+        self.pos == other.0 && self.cost == other.1
+    }
+}
 
-fn get_successors(position: &Pos, board: &Board) -> Vec<(Pos, u8)> {
+fn get_successors(position: &Pos, board: &Board) -> Vec<Successor> {
     let mut successors = Vec::new();
     for dx in (-1 as i16)..=1 {
         for dy in (-1 as i16)..=1 {
@@ -47,7 +53,7 @@ fn get_successors(position: &Pos, board: &Board) -> Vec<(Pos, u8)> {
             }
             let board_value = board.data[new_position.1 as usize][new_position.0 as usize];
             if let Some(board_value) = board_value {
-                successors.push((new_position, board_value));
+                successors.push(Successor { pos: new_position, cost: board_value});
             }
         }
     }
@@ -62,7 +68,7 @@ mod tests {
     fn test_onebyoneboard_nosuccessors() {
         let board = Board::new(vec!["1"]);
         let result = get_successors(&Pos(0, 0), &board);
-        assert_eq!(result, vec![]);
+        assert_eq!(result.len(), 0);
     }
 
     #[test]
@@ -95,7 +101,7 @@ mod tests {
             "18X85",
             "13485"]);
         let result = get_successors(&Pos(2, 2), &board);
-        assert_eq!(result, vec![]);
+        assert_eq!(result.len(), 0);
     }
 
 }
