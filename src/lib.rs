@@ -1,3 +1,9 @@
+use std::path::Path;
+use image::{Rgb, RgbImage};
+use imageproc::drawing::{draw_line_segment_mut, draw_text_mut, draw_filled_rect_mut};
+use imageproc::rect::Rect;
+use rusttype::{Font, Scale};
+
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 struct Pos(i16, i16);
 
@@ -53,6 +59,45 @@ impl Board {
             }
         }
         return successors;
+    }
+
+    fn draw_to_image(&self, path: &Path) {
+        let mut image = RgbImage::new(self.width as u32 * 50, self.height as u32 * 50);
+        const black: Rgb<u8> = Rgb([0u8, 0u8, 0u8]);
+        // draw inner border lines
+        for i in 1u8..self.width {
+            draw_line_segment_mut(&mut image, (i as f32 * 50.0, 0.0), (i as f32 * 50.0, self.height as f32 * 50.0), black);
+        }
+        for i in 1u8..self.height {
+            draw_line_segment_mut(&mut image, (0.0, i as f32 * 50.0), (self.width as f32 * 50.0, i as f32 * 50.0), black);
+        }
+        
+        let font = Vec::from(include_bytes!("DejaVuSans.ttf") as &[u8]);
+        let font = Font::try_from_vec(font).unwrap();
+        let height = 12.4;
+        let scale = Scale {
+            x: height * 2.0,
+            y: height,
+        };
+        for i in 0..self.height {
+            for j in 0..self.width {
+                let board_value = self.data[i as usize][j as usize];
+                match board_value {
+                    Some(board_value) => {
+                        draw_text_mut(&mut image, 
+                            black, 
+                            i as i32 * 50 + 10,
+                            j as i32 * 50 + 10, 
+                            scale,
+                            &font,
+                            &format!("{}", board_value));
+                    }
+                    None => {
+                        draw_filled_rect_mut(&mut image, Rect::at(i as i32 * 50 + 10, j as i32 * 50 + 10).of_size(30, 30), black);
+                    }
+                }
+            }
+        }
     }
 }
 
