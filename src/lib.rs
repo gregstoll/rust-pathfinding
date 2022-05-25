@@ -26,6 +26,34 @@ impl Board {
         }
         Board {width, height, data, allow_diagonal}
     }
+
+    fn get_successors(&self, position: &Pos) -> Vec<Successor> {
+        let mut successors = Vec::new();
+        for dx in (-1 as i16)..=1 {
+            for dy in (-1 as i16)..=1 {
+                if self.allow_diagonal {
+                    if dx == 0 && dy == 0 {
+                        continue;
+                    }
+                }
+                else {
+                    // Omit diagonal moves (and moving to the same position)
+                    if (dx + dy).abs() != 1 {
+                        continue;
+                    }
+                }
+                let new_position = Pos(position.0 + dx, position.1 + dy);
+                if new_position.0 < 0 || new_position.0 >= self.width.into() || new_position.1 < 0 || new_position.1 >= self.height.into() {
+                    continue;
+                }
+                let board_value = self.data[new_position.1 as usize][new_position.0 as usize];
+                if let Some(board_value) = board_value {
+                    successors.push(Successor { pos: new_position, cost: board_value});
+                }
+            }
+        }
+        return successors;
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, PartialOrd)]
@@ -40,33 +68,7 @@ impl PartialEq<(Pos, u8)> for Successor {
     }
 }
 
-fn get_successors(position: &Pos, board: &Board) -> Vec<Successor> {
-    let mut successors = Vec::new();
-    for dx in (-1 as i16)..=1 {
-        for dy in (-1 as i16)..=1 {
-            if board.allow_diagonal {
-                if dx == 0 && dy == 0 {
-                    continue;
-                }
-            }
-            else {
-                // Omit diagonal moves (and moving to the same position)
-                if (dx + dy).abs() != 1 {
-                    continue;
-                }
-            }
-            let new_position = Pos(position.0 + dx, position.1 + dy);
-            if new_position.0 < 0 || new_position.0 >= board.width.into() || new_position.1 < 0 || new_position.1 >= board.height.into() {
-                continue;
-            }
-            let board_value = board.data[new_position.1 as usize][new_position.0 as usize];
-            if let Some(board_value) = board_value {
-                successors.push(Successor { pos: new_position, cost: board_value});
-            }
-        }
-    }
-    return successors;
-}
+
 
 #[cfg(test)]
 mod tests {
@@ -75,7 +77,7 @@ mod tests {
     #[test]
     fn test_onebyoneboard_nosuccessors() {
         let board = Board::new(vec!["1"], false);
-        let result = get_successors(&Pos(0, 0), &board);
+        let result = board.get_successors(&Pos(0, 0));
         assert_eq!(result.len(), 0);
     }
 
@@ -84,7 +86,7 @@ mod tests {
         let board = Board::new(vec![
             "21",
             "1X"], false);
-        let result = get_successors(&Pos(0, 1), &board);
+        let result = board.get_successors(&Pos(0, 1));
         assert_eq!(result, vec![(Pos(0, 0), 2)]);
     }
 
@@ -93,7 +95,7 @@ mod tests {
         let board = Board::new(vec![
             "21",
             "1X"], true);
-        let result = get_successors(&Pos(0, 1), &board);
+        let result = board.get_successors(&Pos(0, 1));
         assert_eq!(result, vec![(Pos(0, 0), 2), (Pos(1, 0), 1)]);
     }
  
@@ -105,7 +107,7 @@ mod tests {
             "238X1",
             "18285",
             "13485"], false);
-        let result = get_successors(&Pos(2, 2), &board);
+        let result = board.get_successors(&Pos(2, 2));
         assert_eq!(result, vec![(Pos(1, 2), 3), (Pos(2, 1), 5), (Pos(2, 3), 2)]);
     }
 
@@ -117,7 +119,7 @@ mod tests {
             "2X8X1",
             "18X85",
             "13485"], false);
-        let result = get_successors(&Pos(2, 2), &board);
+        let result = board.get_successors(&Pos(2, 2));
         assert_eq!(result.len(), 0);
     }
 
