@@ -1,6 +1,7 @@
 use std::path::Path;
 use image::{Rgb, RgbImage};
-use imageproc::drawing::{draw_line_segment_mut, draw_text_mut, draw_filled_rect_mut};
+use imageproc::drawing::{draw_line_segment_mut, draw_text_mut, draw_filled_rect_mut, draw_polygon_mut};
+use imageproc::point::Point;
 use imageproc::rect::Rect;
 use rusttype::{Font, Scale};
 
@@ -137,13 +138,29 @@ impl Board {
 
             ((start.0 as f32 + 0.5) * CELL_WIDTH as f32 + x_delta, (start.1 as f32 + 0.5) * CELL_HEIGHT as f32 + y_delta)
         }
+        fn get_points_for_rectangle_around_line(start: &(f32, f32), end: &(f32, f32), width: f32) -> Vec<Point<i32>> {
+            let (x1, y1) = start;
+            let (x2, y2) = end;
+            let x_delta = x2 - x1;
+            let y_delta = y2 - y1;
+            let x_delta_norm = x_delta / x_delta.hypot(y_delta);
+            let y_delta_norm = y_delta / x_delta.hypot(y_delta);
+
+            vec![
+                Point::new((x1 - y_delta_norm * (width / 2.0)) as i32, (y1 + x_delta_norm * (width / 2.0)) as i32),
+                Point::new((x1 + y_delta_norm * (width / 2.0)) as i32, (y1 - x_delta_norm * (width / 2.0)) as i32),
+                Point::new((x2 + y_delta_norm * (width / 2.0)) as i32, (y2 - x_delta_norm * (width / 2.0)) as i32),
+                Point::new((x2 - y_delta_norm * (width / 2.0)) as i32, (y2 + x_delta_norm * (width / 2.0)) as i32),
+            ]
+        }
         // Draw the path
         if let Some(pos_path) = pos_path {
             pos_path.windows(2).for_each(|pair| {
                 let start_pos = &pair[0];
                 let end_pos = &pair[1];
-                // TODO - use draw_rect_mut to make the line thicker
-                draw_line_segment_mut(&mut image, get_line_endpoint(start_pos, end_pos), get_line_endpoint(end_pos, start_pos), LIGHT_GRAY);
+                let start_line_endpoint = get_line_endpoint(start_pos, end_pos);
+                let end_line_endpoint = get_line_endpoint(end_pos, start_pos);
+                draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 5.0), LIGHT_GRAY);
                 // TODO - use draw_polygon_mut to draw an arrowhead
             });
         }

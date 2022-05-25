@@ -10,5 +10,5 @@ fn main() {
         "238X1",
         "18285",
         "13485"], false);
-    board.draw_to_image(Path::new("board.png"), Some(&vec![Pos(0,0), Pos(0, 1), Pos(1, 1), Pos(2, 2), Pos(2, 1)]));
+    board.draw_to_image(Path::new("board.png"), Some(&vec![Pos(0,0), Pos(0, 1), Pos(1, 2), Pos(2, 2), Pos(2, 1)]));
 }
