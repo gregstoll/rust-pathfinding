@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 pathfinding = "3.0.12"
+png = "0.17.5"
