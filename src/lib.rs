@@ -138,7 +138,7 @@ impl Board {
 
             ((start.0 as f32 + 0.5) * CELL_WIDTH as f32 + x_delta, (start.1 as f32 + 0.5) * CELL_HEIGHT as f32 + y_delta)
         }
-        fn get_points_for_rectangle_around_line(start: &(f32, f32), end: &(f32, f32), width: f32) -> Vec<Point<i32>> {
+        fn get_points_for_rectangle_around_line(start: &(f32, f32), end: &(f32, f32), width: f32, space_for_arrow: f32) -> Vec<Point<i32>> {
             let (x1, y1) = start;
             let (x2, y2) = end;
             let x_delta = x2 - x1;
@@ -149,8 +149,33 @@ impl Board {
             vec![
                 Point::new((x1 - y_delta_norm * (width / 2.0)) as i32, (y1 + x_delta_norm * (width / 2.0)) as i32),
                 Point::new((x1 + y_delta_norm * (width / 2.0)) as i32, (y1 - x_delta_norm * (width / 2.0)) as i32),
-                Point::new((x2 + y_delta_norm * (width / 2.0)) as i32, (y2 - x_delta_norm * (width / 2.0)) as i32),
-                Point::new((x2 - y_delta_norm * (width / 2.0)) as i32, (y2 + x_delta_norm * (width / 2.0)) as i32),
+                Point::new((x2 + y_delta_norm * (width / 2.0) - x_delta_norm * space_for_arrow) as i32, (y2 - x_delta_norm * (width / 2.0) - y_delta_norm * space_for_arrow) as i32),
+                Point::new((x2 - y_delta_norm * (width / 2.0) - x_delta_norm * space_for_arrow) as i32, (y2 + x_delta_norm * (width / 2.0) - y_delta_norm * space_for_arrow) as i32),
+            ]
+        }
+        fn get_points_for_arrowhead(start: &(f32, f32), end: &(f32, f32), width: f32, length: f32) -> Vec<Point<i32>> {
+            //
+            //    start
+            //    ***
+            //    * *
+            //    * *
+            //  ******* <- midpoint of this line is arrow_middle
+            //    ***
+            //    end
+
+            let (x1, y1) = start;
+            let (x2, y2) = end;
+            let x_delta = x2 - x1;
+            let y_delta = y2 - y1;
+            let x_delta_norm = x_delta / x_delta.hypot(y_delta);
+            let y_delta_norm = y_delta / x_delta.hypot(y_delta);
+            let arrow_middle_x = x2 - x_delta_norm * length;
+            let arrow_middle_y = y2 - y_delta_norm * length;
+
+            vec![
+                Point::new(*x2 as i32, *y2 as i32),
+                Point::new((arrow_middle_x - y_delta_norm * width) as i32, (arrow_middle_y + x_delta_norm * width) as i32),
+                Point::new((arrow_middle_x + y_delta_norm * width) as i32, (arrow_middle_y - x_delta_norm * width) as i32),
             ]
         }
         // Draw the path
@@ -160,7 +185,8 @@ impl Board {
                 let end_pos = &pair[1];
                 let start_line_endpoint = get_line_endpoint(start_pos, end_pos);
                 let end_line_endpoint = get_line_endpoint(end_pos, start_pos);
-                draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 5.0), LIGHT_GRAY);
+                draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 5.0, 12.0), LIGHT_GRAY);
+                draw_polygon_mut(&mut image, &get_points_for_arrowhead(&start_line_endpoint, &end_line_endpoint, 7.0, 12.0), LIGHT_GRAY);
                 // TODO - use draw_polygon_mut to draw an arrowhead
             });
         }
