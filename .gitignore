@@ -11,5 +11,9 @@ Cargo.lock
 
 
 # Added by cargo
-
 /target
+
+# testing images
+/*.png
+
+*.swp
