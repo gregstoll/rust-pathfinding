@@ -5,7 +5,7 @@ use imageproc::rect::Rect;
 use rusttype::{Font, Scale};
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Pos(i16, i16);
+pub struct Pos(pub i16, pub i16);
 
 pub struct Board {
     pub width: u8,
@@ -61,10 +61,12 @@ impl Board {
         return successors;
     }
 
-    pub fn draw_to_image(&self, path: &Path) {
+    pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<Vec<Pos>>) {
         let mut image = RgbImage::new(self.width as u32 * 50, self.height as u32 * 50);
         image.fill(255u8);
         const BLACK: Rgb<u8> = Rgb([0u8, 0u8, 0u8]);
+        const BLUE: Rgb<u8> = Rgb([0u8, 0u8, 255u8]);
+        const RED: Rgb<u8> = Rgb([255u8, 0u8, 0u8]);
 
         // draw inner border lines
         for i in 1u8..self.width {
@@ -81,13 +83,28 @@ impl Board {
             x: height * 2.0,
             y: height,
         };
+        let start_pos = pos_path.as_ref().map(|v| v.first()).flatten();
+        let end_pos = pos_path.as_ref().map(|v| v.last()).flatten();
         for y in 0..self.height {
             for x in 0..self.width {
                 let board_value = self.data[y as usize][x as usize];
+                let cur_pos = Pos(x as i16, y as i16);
+                let mut cur_color: &Rgb<u8> = &BLACK;
+                // This would be a nice place to use is_some_and(), but it's still unstalbe
+                if let Some(start_pos_real) = start_pos {
+                    if start_pos_real == &cur_pos {
+                        cur_color = &BLUE;
+                    }
+                }
+                if let Some(end_pos_real) = end_pos {
+                    if end_pos_real == &cur_pos {
+                        cur_color = &RED;
+                    }
+                }
                 match board_value {
                     Some(board_value) => {
                         draw_text_mut(&mut image, 
-                            BLACK, 
+                            *cur_color, 
                             x as i32 * 50 + 10,
                             y as i32 * 50 + 10, 
                             scale,
@@ -95,12 +112,12 @@ impl Board {
                             &format!("{}", board_value));
                     }
                     None => {
-                        draw_filled_rect_mut(&mut image, Rect::at(x as i32 * 50, y as i32 * 50).of_size(50, 50), BLACK);
+                        draw_filled_rect_mut(&mut image, Rect::at(x as i32 * 50, y as i32 * 50).of_size(50, 50), *cur_color);
                     }
                 }
             }
         }
-        image.save(path).unwrap();
+        image.save(file_path).unwrap();
     }
 }
 
