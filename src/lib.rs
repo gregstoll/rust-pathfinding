@@ -36,8 +36,8 @@ impl Board {
 
     pub fn get_successors(&self, position: &Pos) -> Vec<Successor> {
         let mut successors = Vec::new();
-        for dx in (-1 as i16)..=1 {
-            for dy in (-1 as i16)..=1 {
+        for dx in -1i16..=1 {
+            for dy in -1i16..=1 {
                 if self.allow_diagonal {
                     if dx == 0 && dy == 0 {
                         continue;
