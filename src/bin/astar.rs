@@ -3,7 +3,6 @@ use std::path::Path;
 use pathfinding::prelude::astar;
 use rust_pathfinding::{Board, Pos};
 
-//const pattern : 
 fn main() {
     let board = Board::new(vec![
         "21341",
