@@ -25,7 +25,7 @@ impl Board {
             for c in board_line.chars() {
                 match c {
                     'X' => row.push(None),
-                    '1'..='9' => row.push(Some(c as u8 - '0' as u8)),
+                    '1'..='9' => row.push(Some(c as u8 - b'0')),
                     _ => panic!("invalid character")
                 }
             }
@@ -59,7 +59,8 @@ impl Board {
                 }
             }
         }
-        return successors;
+
+        successors
     }
 
     pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<&Vec<Pos>>) {
@@ -88,8 +89,8 @@ impl Board {
             y: height,
         };
         let no_costs = self.data.iter().all(|row| row.iter().all(|cell| cell.is_none() || cell.unwrap() == 1));
-        let start_pos = pos_path.map(|v| v.first()).flatten();
-        let end_pos = pos_path.map(|v| v.last()).flatten();
+        let start_pos = pos_path.and_then(|v| v.first());
+        let end_pos = pos_path.and_then(|v| v.last());
         // draw the numbers/walls (with start and end positions)
         for y in 0..self.height {
             for x in 0..self.width {
