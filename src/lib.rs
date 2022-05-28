@@ -87,6 +87,7 @@ impl Board {
             x: height * 2.0,
             y: height,
         };
+        let no_costs = self.data.iter().all(|row| row.iter().all(|cell| cell.is_none() || cell.unwrap() == 1));
         let start_pos = pos_path.map(|v| v.first()).flatten();
         let end_pos = pos_path.map(|v| v.last()).flatten();
         // draw the numbers/walls (with start and end positions)
@@ -109,13 +110,23 @@ impl Board {
                 }
                 match board_value {
                     Some(board_value) => {
-                        draw_text_mut(&mut image, 
-                            *cur_color, 
-                            x as i32 * CELL_WIDTH as i32 + 13,
-                            y as i32 * CELL_HEIGHT as i32 + 13, 
-                            scale,
-                            &font,
-                            &format!("{}", board_value));
+                        if !no_costs {
+                            draw_text_mut(&mut image, 
+                                *cur_color, 
+                                x as i32 * CELL_WIDTH as i32 + 13,
+                                y as i32 * CELL_HEIGHT as i32 + 13, 
+                                scale,
+                                &font,
+                                &format!("{}", board_value));
+                        }
+                        else {
+                            // draw a rectangle for the start and end positions
+                            if cur_color != &BLACK {
+                                draw_filled_rect_mut(&mut image, 
+                               Rect::at(x as i32 * CELL_WIDTH as i32 + 15, y as i32 * CELL_HEIGHT as i32 + 15).of_size(CELL_WIDTH - 15 * 2, CELL_HEIGHT - 15 * 2),
+                                    *cur_color);
+                            }
+                        }
                     }
                     None => {
                         draw_filled_rect_mut(&mut image, Rect::at(x as i32 * CELL_WIDTH as i32, y as i32 * CELL_HEIGHT as i32).of_size(CELL_WIDTH, CELL_HEIGHT), *cur_color);
