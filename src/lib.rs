@@ -199,7 +199,6 @@ impl Board {
                 let end_line_endpoint = get_line_endpoint(end_pos, start_pos);
                 draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 5.0, 12.0), LIGHT_GRAY);
                 draw_polygon_mut(&mut image, &get_points_for_arrowhead(&start_line_endpoint, &end_line_endpoint, 7.0, 12.0), LIGHT_GRAY);
-                // TODO - use draw_polygon_mut to draw an arrowhead
             });
         }
 
