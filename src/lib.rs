@@ -55,7 +55,7 @@ impl Board {
                 }
                 let board_value = self.data[new_position.1 as usize][new_position.0 as usize];
                 if let Some(board_value) = board_value {
-                    successors.push(Successor { pos: new_position, cost: board_value});
+                    successors.push(Successor { pos: new_position, cost: board_value as u32});
                 }
             }
         }
@@ -209,11 +209,11 @@ impl Board {
 #[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd)]
 pub struct Successor {
     pub pos: Pos,
-    pub cost: u8,
+    pub cost: u32,
 }
 // Used to make writing tests easier
-impl PartialEq<(Pos, u8)> for Successor {
-    fn eq(&self, other: &(Pos, u8)) -> bool {
+impl PartialEq<(Pos, u32)> for Successor {
+    fn eq(&self, other: &(Pos, u32)) -> bool {
         self.pos == other.0 && self.cost == other.1
     }
 }
