@@ -5,13 +5,15 @@ use rust_pathfinding::{Board, Pos};
 
 fn main() {
     let board = Board::new(vec![
-        "21397",
-        "1X184",
-        "62291",
-        "16224",
-        "13485"], false);
+        "21397X2",
+        "1X19452",
+        "62281X1",
+        "1612179",
+        "1348512",
+        "61453X1",
+        "7861243"], false);
     let start = Pos(0,1);
-    let goal = Pos(4,2);
+    let goal = Pos(6,2);
     let result = astar(
         &start,
         |p| board.get_successors(p).iter().map(|s| (s.pos, s.cost as u32)).collect::<Vec<_>>(),
