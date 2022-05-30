@@ -66,11 +66,12 @@ impl Board {
     pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<&Vec<Pos>>) {
         const CELL_WIDTH: u32 = 50;
         const CELL_HEIGHT: u32 = 50;
+        const CELL_SHADING: Option<u8> = Some(10);
         let mut image = RgbImage::new(self.width as u32 * CELL_WIDTH, self.height as u32 * CELL_HEIGHT);
         image.fill(255u8);
         const BLACK: Rgb<u8> = Rgb([0u8, 0u8, 0u8]);
-        const BLUE: Rgb<u8> = Rgb([0u8, 0u8, 255u8]);
-        const RED: Rgb<u8> = Rgb([255u8, 0u8, 0u8]);
+        const DODGER_BLUE: Rgb<u8> = Rgb([30u8, 144u8, 255u8]);
+        const LIME_GREEN: Rgb<u8> = Rgb([50u8, 205u8, 50u8]);
         const LIGHT_GRAY: Rgb<u8> = Rgb([150u8, 150u8, 150u8]);
 
         // draw inner border lines
@@ -91,6 +92,11 @@ impl Board {
         let no_costs = self.data.iter().all(|row| row.iter().all(|cell| cell.is_none() || cell.unwrap() == 1));
         let start_pos = pos_path.and_then(|v| v.first());
         let end_pos = pos_path.and_then(|v| v.last());
+        fn get_cell_background_color(board_value: u8) -> Option<Rgb<u8>> {
+            CELL_SHADING.map(|shading| {
+                Rgb([255u8, 255u8 - (board_value - 1) * shading, 255u8 - (board_value - 1) * shading])
+            })
+        }
         // draw the numbers/walls (with start and end positions)
         for y in 0..self.height {
             for x in 0..self.width {
@@ -101,17 +107,27 @@ impl Board {
                 // https://github.com/rust-lang/rust/issues/93050
                 if let Some(start_pos_real) = start_pos {
                     if start_pos_real == &cur_pos {
-                        cur_color = &BLUE;
+                        cur_color = &DODGER_BLUE;
                     }
                 }
                 if let Some(end_pos_real) = end_pos {
                     if end_pos_real == &cur_pos {
-                        cur_color = &RED;
+                        cur_color = &LIME_GREEN;
                     }
                 }
                 match board_value {
                     Some(board_value) => {
                         if !no_costs {
+                            if let Some(cell_background_color) = get_cell_background_color(board_value) {
+                                // cells on the left/top border need an extra pixel at the left/top
+                                let start_x = if x == 0 { 0 } else {x as i32 * CELL_WIDTH as i32 + 1};
+                                let x_size = if x == 0 { CELL_WIDTH } else { CELL_WIDTH - 1};
+                                let start_y = if y == 0 { 0 } else {y as i32 * CELL_HEIGHT as i32 + 1};
+                                let y_size = if y == 0 { CELL_HEIGHT } else { CELL_HEIGHT - 1};
+                                draw_filled_rect_mut(&mut image, 
+                                    Rect::at(start_x, start_y).of_size(x_size, y_size),
+                                    cell_background_color);
+                            }
                             draw_text_mut(&mut image, 
                                 *cur_color, 
                                 x as i32 * CELL_WIDTH as i32 + 13,
