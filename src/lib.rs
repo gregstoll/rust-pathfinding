@@ -234,8 +234,6 @@ impl PartialEq<(Pos, u32)> for Successor {
     }
 }
 
-
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -288,5 +286,4 @@ mod tests {
         let result = board.get_successors(&Pos(2, 2));
         assert_eq!(result.len(), 0);
     }
-
 }

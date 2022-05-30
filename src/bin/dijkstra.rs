@@ -19,5 +19,4 @@ fn main() {
     let result = result.expect("No path found");
     println!("total cost: {:}", result.1);
     board.draw_to_image(Path::new("dijkstra.png"), Some(&result.0));
-
 }
