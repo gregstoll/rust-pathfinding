@@ -64,8 +64,8 @@ impl Board {
     }
 
     pub fn draw_to_image(&self, file_path: &Path, pos_path: Option<&Vec<Pos>>) {
-        const CELL_WIDTH: u32 = 50;
-        const CELL_HEIGHT: u32 = 50;
+        const CELL_WIDTH: u32 = 100;
+        const CELL_HEIGHT: u32 = 100;
         const CELL_SHADING: Option<u8> = Some(10);
         let mut image = RgbImage::new(self.width as u32 * CELL_WIDTH, self.height as u32 * CELL_HEIGHT);
         image.fill(255u8);
@@ -84,7 +84,7 @@ impl Board {
         
         let font = Vec::from(include_bytes!("DejaVuSans.ttf") as &[u8]);
         let font = Font::try_from_vec(font).unwrap();
-        let height = 24.0;
+        let height = 48.0;
         let scale = Scale {
             x: height * 2.0,
             y: height,
@@ -130,8 +130,8 @@ impl Board {
                             }
                             draw_text_mut(&mut image, 
                                 *cur_color, 
-                                x as i32 * CELL_WIDTH as i32 + 13,
-                                y as i32 * CELL_HEIGHT as i32 + 13, 
+                                x as i32 * CELL_WIDTH as i32 + 26,
+                                y as i32 * CELL_HEIGHT as i32 + 26, 
                                 scale,
                                 &font,
                                 &format!("{}", board_value));
@@ -140,7 +140,7 @@ impl Board {
                             // draw a rectangle for the start and end positions
                             if cur_color != &BLACK {
                                 draw_filled_rect_mut(&mut image, 
-                               Rect::at(x as i32 * CELL_WIDTH as i32 + 15, y as i32 * CELL_HEIGHT as i32 + 15).of_size(CELL_WIDTH - 15 * 2, CELL_HEIGHT - 15 * 2),
+                               Rect::at(x as i32 * CELL_WIDTH as i32 + 30, y as i32 * CELL_HEIGHT as i32 + 30).of_size(CELL_WIDTH - 30 * 2, CELL_HEIGHT - 30 * 2),
                                     *cur_color);
                             }
                         }
@@ -153,12 +153,12 @@ impl Board {
         }
 
         fn get_line_endpoint(start: &Pos, end: &Pos) -> (f32, f32) {
-            let x_delta = 10.0 * match end.0.cmp(&start.0) {
+            let x_delta = 20.0 * match end.0.cmp(&start.0) {
                 std::cmp::Ordering::Equal => 0,
                 std::cmp::Ordering::Less => -1,
                 std::cmp::Ordering::Greater => 1
             } as f32;
-            let y_delta = 10.0 * match end.1.cmp(&start.1) {
+            let y_delta = 20.0 * match end.1.cmp(&start.1) {
                 std::cmp::Ordering::Equal => 0,
                 std::cmp::Ordering::Less => -1,
                 std::cmp::Ordering::Greater => 1
@@ -213,8 +213,8 @@ impl Board {
                 let end_pos = &pair[1];
                 let start_line_endpoint = get_line_endpoint(start_pos, end_pos);
                 let end_line_endpoint = get_line_endpoint(end_pos, start_pos);
-                draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 5.0, 12.0), LIGHT_GRAY);
-                draw_polygon_mut(&mut image, &get_points_for_arrowhead(&start_line_endpoint, &end_line_endpoint, 7.0, 12.0), LIGHT_GRAY);
+                draw_polygon_mut(&mut image, &get_points_for_rectangle_around_line(&start_line_endpoint, &end_line_endpoint, 10.0, 24.0), LIGHT_GRAY);
+                draw_polygon_mut(&mut image, &get_points_for_arrowhead(&start_line_endpoint, &end_line_endpoint, 14.0, 24.0), LIGHT_GRAY);
             });
         }
 
