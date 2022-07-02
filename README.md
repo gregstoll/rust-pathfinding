@@ -1,7 +1,7 @@
 # rust-pathfinding
 Examples of pathfinding in Rust
 
-This repo is the example code for an upcoming article on the [LogRocket blog](https://blog.logrocket.com/). It shows examples of doing breadth-first search, Dijkstra's algorithm, and A* search.
+This repo is the example code for the article [Pathfinding in Rust: A tutorial with examples](https://blog.logrocket.com/pathfinding-rust-tutorial-examples/) on the [LogRocket blog](https://blog.logrocket.com/). It shows examples of doing breadth-first search, Dijkstra's algorithm, and A* search.
 
 To run these, use:
 - `cargo run --bin bfs` to run the breadth-first search example - this will output bfs.png in the root directory.
